@@ -56,6 +56,7 @@ private:
   Transaction *Head;
   Transaction *Last;
   void pushBack(Transaction*);
+  void ClearTransactions();
 
 public:
 
@@ -220,6 +221,27 @@ void Customer::pushBack(Transaction* transaction){
 }
 
 /**
+ * deleting all transactions
+ */
+void Customer::ClearTransactions(){
+
+  Transaction* t = Head;
+  while ( t != NULL ){
+
+    Transaction* c = t;
+    t = t->next;
+    delete c;
+
+  }
+
+  Head = NULL;
+  Last = NULL;
+  counter = 0;
+  oldest_transaction_date = 0;
+
+}
+
+/**
  * printing Transaction after specific Date
  * @param date [description]
  */
@@ -331,6 +353,9 @@ void Customer::readFromTexualFile(){
 
      if(!file.is_open()) { cout << "err occured :|"; return; }
 
+     /* for avoiding repeated imports */  
+     ClearTransactions();
+
      string name;
      double remaining_Money ,amount_of_transaction , remaining_money_after_transaction;
      bool status;
@@ -366,6 +391,7 @@ void Customer::printToBinaryFile(){
      file.write(reinterpret_cast<char *>(&remaining_Money),sizeof(remaining_Money));
      file.write(reinterpret_cast<char *>(&customer_number),sizeof(customer_number));
      file.write(reinterpret_cast<char *>(&name),sizeof(name));
+     file.write(reinterpret_cast<char *>(&oldest_transaction_date),sizeof(oldest_transaction_date));
 
      file.write(reinterpret_cast<char *>(&counter),sizeof(counter));
      Transaction* c = Head;
@@ -391,11 +417,15 @@ void Customer::readFromBinaryFile(){
 
      if(!file.is_open()) { cout <<"err occured :|"; return; }
 
+     /* for avoiding repeated imports */  
+     ClearTransactions();
+
      file.read(reinterpret_cast<char *>(&remaining_Money),sizeof(remaining_Money));
      file.read(reinterpret_cast<char *>(&customer_number),sizeof(customer_number));
      file.read(reinterpret_cast<char *>(&name),sizeof(name));
-     file.read(reinterpret_cast<char *>(&counter),sizeof(counter));
+     file.read(reinterpret_cast<char *>(&oldest_transaction_date),sizeof(oldest_transaction_date));
 
+     file.read(reinterpret_cast<char *>(&counter),sizeof(counter));
      int count = 0;
      while(count < counter ){
        Transaction *c = new Transaction();
@@ -440,11 +470,13 @@ int main(){
     Customer b;
       cout << "binary file output ( after added one Transaction ) :" << endl;
       b.readFromBinaryFile();
+      b.readFromBinaryFile();
       b.pushBack(991203,1000,1);
       b.print();
       cout << "-----------------------" << endl;
     Customer c;
       cout << "text file output ( after added one Transaction ):" << endl;
+      c.readFromTexualFile();
       c.readFromTexualFile();
       c.pushBack(991203,1000,1);
       c.print();
